@@ -1,7 +1,22 @@
 const Sequelize = require('sequelize');
 
+/*
+
+GRANT ALL PRIVILEGES ON *.* TO 'dhananjay'@'localhost' IDENTIFIED BY 'dhananjay';
+exit
+
+mysql -udhananjay -pdhananjay
+
+CREATE DATABASE splitwise;
+USE splitwise;
+
+ */
+
+
 const rootPrefix = '..',
-  TestModel = require(rootPrefix + '/app/models/TestModel'),
+  UserModel = require(rootPrefix + '/app/models/User'),
+  ExpenseModel = require(rootPrefix + '/app/models/Expense'),
+  UserBalanceModel = require(rootPrefix + '/app/models/UserBalance'),
   coreConstants = require(rootPrefix + '/coreConstants');
 
 const mysqlHost = coreConstants.MYSQL_HOST,
@@ -20,7 +35,9 @@ const sequelize = new Sequelize(dbName, mysqlUser, password, {
   }
 });
 
-const Test = TestModel(sequelize, Sequelize);
+const User = UserModel(sequelize, Sequelize),
+  Expense = ExpenseModel(sequelize, Sequelize),
+  UserBalance = UserBalanceModel(sequelize, Sequelize);
 
 sequelize.sync({ force: true })
   .then(() => {
@@ -29,5 +46,7 @@ sequelize.sync({ force: true })
   });
 
 module.exports = {
-  Test
+  User,
+  UserBalance,
+  Expense
 };
