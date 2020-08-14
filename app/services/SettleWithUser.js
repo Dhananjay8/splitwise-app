@@ -16,7 +16,7 @@ class SettleWithUser extends ServicesBase {
     oThis.currentUserId = +params.current_user_id;
     oThis.settleWithUserName = params.settle_with_user_name;
 
-    oThis.otherUserId = null;
+    oThis.settleWithUserId = null;
   }
 
   async _asyncPerform() {
@@ -46,10 +46,10 @@ class SettleWithUser extends ServicesBase {
     });
 
     if(userResponse.length) {
-      oThis.otherUserId = userResponse[0].dataValues.id;
+      oThis.settleWithUserId = userResponse[0].dataValues.id;
     }
 
-    if(!oThis.otherUserId) {
+    if(!oThis.settleWithUserId) {
       return Promise.reject({
         success: false,
         code: 422,
@@ -70,7 +70,7 @@ class SettleWithUser extends ServicesBase {
       { where:
           {
             payer_id: oThis.currentUserId,
-            payee_id: oThis.otherUserId
+            payee_id: oThis.settleWithUserId
           }
       });
 
@@ -79,7 +79,7 @@ class SettleWithUser extends ServicesBase {
       },
       { where:
           {
-            payer_id: oThis.otherUserId,
+            payer_id: oThis.settleWithUserId,
             payee_id: oThis.currentUserId
           }
       });

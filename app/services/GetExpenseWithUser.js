@@ -15,9 +15,9 @@ class GetExpenseWithUser extends ServicesBase {
     const oThis = this;
     console.log('params=======', params);
     oThis.currentUserId = +params.current_user_id;
-    oThis.otherUserName = params.balance_to_be_calculated_with;
+    oThis.balanceCalculatedWith = params.balance_to_be_calculated_with;
 
-    oThis.otherUserId = null;
+    oThis.balanceCalculatedWithUserId = null;
   }
 
   async _asyncPerform() {
@@ -27,9 +27,17 @@ class GetExpenseWithUser extends ServicesBase {
 
     const balance = await oThis._getExpense();
 
+    let Description = null;
+
+    console.log('balance=========', balance);
+
+    if(balance == 0) Description = 'ALL SETTLED UP!';
+    else if(balance < 0) Description = `You owe ${oThis.balanceCalculatedWith} Rs. ${Math.abs(balance)}.`;
+    else Description = `You get back Rs.${Math.abs(balance)} from ${oThis.balanceCalculatedWith}.`;
+
     return {
       success: true,
-      data: {balance: balance}
+      data: {balance: balance, info: Description}
     }
   }
 
@@ -40,21 +48,21 @@ class GetExpenseWithUser extends ServicesBase {
 
     const userResponse = await User.findAll({
       where: {
-        user_name: [oThis.otherUserName]
+        user_name: [oThis.balanceCalculatedWith]
       }
     });
 
     if(userResponse.length) {
-      oThis.otherUserId = userResponse[0].dataValues.id;
+      oThis.balanceCalculatedWithUserId = userResponse[0].dataValues.id;
     }
 
-    if(!oThis.otherUserId) {
+    if(!oThis.balanceCalculatedWithUserId) {
       return Promise.reject({
         success: false,
         code: 422,
         internal_error_identifier: 'a_s_gewu_1',
         api_error_identifier: 'user_not_found',
-        debug_options: {balance_to_be_calculated_with: oThis.otherUserName}
+        debug_options: {balance_to_be_calculated_with: oThis.balanceCalculatedWith}
       })
     }
   }
@@ -66,12 +74,12 @@ class GetExpenseWithUser extends ServicesBase {
     const currentUserPayerResp = await UserBalances.findAll({
       where: {
         payer_id: oThis.currentUserId,
-        payee_id: oThis.otherUserId
+        payee_id: oThis.balanceCalculatedWithUserId
       }
     });
 
     let currentUserPayerRespDataValues = null,
-      otherUserPayerRespDataValues = null;
+      balanceCalculatedWithUserPayerRespDataValues = null;
 
     if(currentUserPayerResp.length) {
       currentUserPayerRespDataValues = currentUserPayerResp[0].dataValues;
@@ -81,25 +89,25 @@ class GetExpenseWithUser extends ServicesBase {
 
     const otherUserPayerResp = await UserBalances.findAll({
       where: {
-        payer_id: oThis.otherUserId,
+        payer_id: oThis.balanceCalculatedWithUserId,
         payee_id: oThis.currentUserId
       }
     });
 
     if(otherUserPayerResp.length) {
-      otherUserPayerRespDataValues = otherUserPayerResp[0].dataValues;
+      balanceCalculatedWithUserPayerRespDataValues = otherUserPayerResp[0].dataValues;
     }
 
-    console.log('otherUserPayerRespDataValues =====', otherUserPayerRespDataValues);
+    console.log('otherUserPayerRespDataValues =====', balanceCalculatedWithUserPayerRespDataValues);
 
-    if(currentUserPayerRespDataValues === null && otherUserPayerRespDataValues === null) {
+    if(currentUserPayerRespDataValues === null && balanceCalculatedWithUserPayerRespDataValues === null) {
       return 0;
     } else if(currentUserPayerRespDataValues === null) {
-      return -otherUserPayerRespDataValues.amount;
-    } else if(otherUserPayerRespDataValues === null) {
+      return -balanceCalculatedWithUserPayerRespDataValues.amount;
+    } else if(balanceCalculatedWithUserPayerRespDataValues === null) {
       return currentUserPayerRespDataValues.amount;
     } else {
-      return (currentUserPayerRespDataValues.amount - otherUserPayerRespDataValues.amount);
+      return (currentUserPayerRespDataValues.amount - balanceCalculatedWithUserPayerRespDataValues.amount);
     }
   }
 }
