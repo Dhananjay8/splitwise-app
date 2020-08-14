@@ -10,25 +10,10 @@ const rootPrefix = '../..',
 const mysqlInstance = mysqlProvider.getInstance();
 
 class AddExpense extends ServicesBase {
-
-  /**
-   * Constructor for add expense class.
-   *
-   * @param {Object} params
-   * @param {String} params.current_user_id;
-   * @param {String} params.payer_user_name;
-   * @param {String} params.payee_user_name;
-   * @param {Number} params.owe_amount;
-   * @param {Number} params.description;
-   *
-   * @constructor
-   *
-   * @augments ServicesBase
-   */
   constructor(params) {
     super(params);
     const oThis = this;
-    oThis.currentUserId = +params.current_user_id;
+
     oThis.payerUserName = params.payer_user_name;
     oThis.payeeUserName = params.payee_user_name;
     oThis.oweAmount = params.owe_amount;
@@ -38,12 +23,6 @@ class AddExpense extends ServicesBase {
     oThis.expenseId = null;
   }
 
-  /**
-   * Main performer method.
-   *
-   * @returns {Promise<{data: {}, success: boolean}>}
-   * @private
-   */
   async _asyncPerform() {
     const oThis = this;
 
@@ -59,12 +38,6 @@ class AddExpense extends ServicesBase {
     }
   }
 
-  /**
-   * Validate and sanitize input parameters.
-   *
-   * @returns {Promise<*>}
-   * @private
-   */
   async _validateAndSanitize() {
     const oThis = this,
       User = UserModel(mysqlInstance, Sequelize);
@@ -97,12 +70,6 @@ class AddExpense extends ServicesBase {
     }
   }
 
-  /**
-   * Add expense to expenses table and balances table.
-   *
-   * @returns {Promise<void>}
-   * @private
-   */
   async _addExpense() {
     const oThis = this,
       Expenses = ExpensesModel(mysqlInstance, Sequelize),
@@ -120,7 +87,6 @@ class AddExpense extends ServicesBase {
       {replacements:[oThis.oweAmount, oThis.payerUserId, oThis.payeeUserId]});
 
     if(updateResp[0].affectedRows > 0) {
-      // Do nothing as there are some updated rows.
     } else {
       await UserBalances.create({
         payer_id: oThis.payerUserId,
