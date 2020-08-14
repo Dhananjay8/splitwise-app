@@ -38,12 +38,12 @@ router.post('/register', async function(req, res) {
 router.post('/expenses/add', async function(req, res) {
 
     const payer_user_name = req.body.payer_user_name,
-      payee_user_name = req.body.payee_user_name,
+      payee_user_names = req.body.payee_user_names,
       owe_amount = req.body.owe_amount;
 
     new AddExpense({
       payer_user_name: payer_user_name,
-      payee_user_name: payee_user_name,
+      payee_user_names: payee_user_names,
       owe_amount: owe_amount
     }).perform().then(function(rsp){
       if(!rsp){

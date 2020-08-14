@@ -10,6 +10,8 @@ mysql -udhananjay -pdhananjay
 CREATE DATABASE splitwise;
 USE splitwise;
 
+source set_env_vars.sh
+node ./app/sequelize.js
  */
 
 

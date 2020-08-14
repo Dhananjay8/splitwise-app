@@ -1,5 +1,6 @@
 const express = require('express'),
   path = require('path'),
+  customUrlParser = require('url'),
   bodyParser = require('body-parser');
 
 const rootPrefix = '.',
@@ -17,6 +18,17 @@ const port = process.env.PORT || 3000;
 const assignParams = function(req, res, next) {
   req.decodedParams = Object.assign(getRequestParams(req), req.decodedParams);
 
+  const message = [
+    "\n\n\nStarted '",
+    customUrlParser.parse(req.originalUrl).pathname,
+    "'  '",
+    req.method,
+    "' at ",
+    new Date()
+  ];
+
+  console.log(message.join(''));
+
   next();
 };
 
@@ -27,6 +39,7 @@ const assignParams = function(req, res, next) {
  * @return {*}
  */
 const getRequestParams = function(req) {
+
   if (req.method === 'POST') {
     return req.body;
   } else if (req.method === 'GET') {
