@@ -41,10 +41,22 @@ router.post('/expenses/add', async function(req, res) {
       payee_user_names = req.body.payee_user_names,
       owe_amount = req.body.owe_amount;
 
+    let payee_user_name_to_share = null,
+      share_type = null;
+
+    if(req.body.payee_user_name_to_share) {
+      payee_user_name_to_share = req.body.payee_user_name_to_share;
+    }
+    if(req.body.share_type) {
+      share_type = req.body.share_type;
+    }
+
     new AddExpense({
       payer_user_name: payer_user_name,
       payee_user_names: payee_user_names,
-      owe_amount: owe_amount
+      owe_amount: owe_amount,
+      payee_user_name_to_share: payee_user_name_to_share,
+      share_type: share_type,
     }).perform().then(function(rsp){
       if(!rsp){
         res.status(500).json({});

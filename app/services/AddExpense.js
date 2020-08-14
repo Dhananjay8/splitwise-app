@@ -19,10 +19,13 @@ class AddExpense extends ServicesBase {
     oThis.payerUserName = params.payer_user_name;
     oThis.payeeUserNames = params.payee_user_names;
     oThis.oweAmount = params.owe_amount;
+    oThis.shareType = params.share_type;
+    oThis.payeeUserNameToShareMap = JSON.parse(params.payee_user_name_to_share);
 
     oThis.payerUserId = null;
     oThis.payeeUserIds = [];
     oThis.expenseIds = [];
+    oThis.payeeUserIdToShareMap = {};
   }
 
   async _asyncPerform() {
@@ -44,7 +47,21 @@ class AddExpense extends ServicesBase {
     const oThis = this,
       User = UserModel(mysqlInstance, Sequelize);
 
-    console.log(oThis.payeeUserNames, typeof oThis.payeeUserNames);
+    if((oThis.shareType && oThis.shareType == 'unequal') && !oThis.payeeUserNameToShareMap) {
+      return Promise.reject({
+        success: false,
+        code: 422,
+        internal_error_identifier: 'a_s_ae_1',
+        api_error_identifier: 'missing_payee_user_name_to_share',
+        debug_options: {
+          share_type: oThis.shareType,
+          payee_user_name_to_share: oThis.payeeUserNameToShareMap
+        }
+      })
+    }
+
+    console.log('oThis.payeeUserNameToShareMap===========', oThis.payeeUserNameToShareMap);
+    console.log('oThis.payeeUserNames===========', oThis.payeeUserNames);
 
     // oThis.payeeUserNames = JSON.parse((oThis.payeeUserNames));
 
@@ -65,6 +82,7 @@ class AddExpense extends ServicesBase {
         oThis.payerUserId = userObj.id;
       } else if(oThis.payeeUserNames.includes(userObj.user_name)) {
         oThis.payeeUserIds.push(userObj.id);
+        oThis.payeeUserIdToShareMap[userObj.id] = oThis.payeeUserNameToShareMap[userObj.user_name];
       }
     }
 
@@ -87,30 +105,30 @@ class AddExpense extends ServicesBase {
       Expenses = ExpensesModel(mysqlInstance, Sequelize),
       UserBalances = UserBalancesModel(mysqlInstance, Sequelize);
 
-    const equalShare = Math.round(oThis.oweAmount/oThis.payeeUserIds.length);
-
-    console.log('equalShare=========', equalShare);
-
     for(let i = 0; i < oThis.payeeUserIds.length; i++) {
       let payeeUserId = oThis.payeeUserIds[i];
+
+      const amountsMap = oThis._calculateAmountMap();
+
+      console.log('amountsMap========', amountsMap);
 
       const expensesCreationResp = await Expenses.create({
         payer_id: oThis.payerUserId,
         payee_id: payeeUserId,
-        amount: oThis.oweAmount
+        amount: amountsMap[payeeUserId]
       });
 
       oThis.expenseIds.push(expensesCreationResp.dataValues.id);
 
       const updateResp = await mysqlInstance.query(`UPDATE user_balances SET amount = amount + ? WHERE (payer_id = ? and payee_id = ?)`,
-        {replacements:[equalShare, oThis.payerUserId, payeeUserId]});
+        {replacements:[amountsMap[payeeUserId], oThis.payerUserId, payeeUserId]});
 
       if(updateResp[0].affectedRows > 0) {
       } else {
         await UserBalances.create({
           payer_id: oThis.payerUserId,
           payee_id: payeeUserId,
-          amount: equalShare
+          amount: amountsMap[payeeUserId]
         }).catch(function(err) {
           if(err.parent.code === 'ER_DUP_ENTRY') {
             return Promise.reject({
@@ -125,6 +143,24 @@ class AddExpense extends ServicesBase {
       }
     }
 
+  }
+
+  _calculateAmountMap() {
+    const oThis = this;
+
+    if(oThis.shareType == 'unequal') {
+
+      return oThis.payeeUserIdToShareMap;
+    }
+
+    const resultMap = {},
+      equalShare = Math.round(oThis.oweAmount/oThis.payeeUserIds.length);
+
+    for(let i = 0; i < oThis.payeeUserIds.length; i++) {
+      resultMap[oThis.payeeUserIds[i]] = equalShare;
+    }
+
+    return resultMap;
   }
 }
 
