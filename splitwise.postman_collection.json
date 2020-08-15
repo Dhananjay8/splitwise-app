@@ -1,0 +1,199 @@
+{
+	"info": {
+		"_postman_id": "b3a1216d-4869-48f2-86e9-4a59aef9ecba",
+		"name": "splitwise",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "first_name",
+							"value": "dhananjay",
+							"type": "text"
+						},
+						{
+							"key": "last_name",
+							"value": "patil",
+							"type": "text"
+						},
+						{
+							"key": "user_name",
+							"value": "d1",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:3000/api/register",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add-expense",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "payer_user_name",
+							"value": "d1",
+							"type": "text"
+						},
+						{
+							"key": "payee_user_names[0]",
+							"value": "d2",
+							"type": "text"
+						},
+						{
+							"key": "owe_amount",
+							"value": "100",
+							"type": "text"
+						},
+						{
+							"key": "payee_user_names[1]",
+							"value": "d3",
+							"type": "text"
+						},
+						{
+							"key": "share_type",
+							"value": "unequal",
+							"type": "text"
+						},
+						{
+							"key": "payee_user_name_to_share",
+							"value": "{\"d2\": 10, \"d3\": 90}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:3000/api/expenses/add",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"expenses",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "settle-balance",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "settle_with_user_name",
+							"value": "d2",
+							"type": "text"
+						},
+						{
+							"key": "current_user_id",
+							"value": "9",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:3000/api/balances/settle",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"balances",
+						"settle"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-balance",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": []
+				},
+				"url": {
+					"raw": "localhost:3000/api/balances/get?other_user_name=d2",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"balances",
+						"get"
+					],
+					"query": [
+						{
+							"key": "other_user_name",
+							"value": "d2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "list-expenses",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": []
+				},
+				"url": {
+					"raw": "localhost:3000/api/expenses/list",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"expenses",
+						"list"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
